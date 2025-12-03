@@ -11,8 +11,6 @@ or a *`workflow.qmd`* file that can be run by the EDA_Builder script.
 Example templates are provided for each of these workflows.  
   
 This is a template repository and can be used to start a new project.  
-  
-Dev area: `mp60sci21v:~/s-drive/TBI/DATA_ANALYSIS/TBI-2024-0062/4.EDA_Analysis_T3/code`  
 
 ## Files:
 - `build.sh`: The main script that runs the analysis.  
