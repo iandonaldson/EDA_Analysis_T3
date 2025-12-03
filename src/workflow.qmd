@@ -1,0 +1,107 @@
+---
+title: "Workflow Report"
+author: "Your Name"
+date: today
+format: html
+execute:
+  freeze: auto
+params:
+  configPath: "config/config.yml"
+---
+
+```{r}
+library(yaml)
+library(ggplot2)
+library(plotly)
+library(readr)
+library(DT)
+
+
+# Code in this workflow is written as if the cwd is the root of the code repo.
+# quarto render will set the wd to the dir of the qmd file so it is reset here
+setwd("../.")
+
+# Generate and save the mtcars data set - run once
+write.csv(mtcars, file = "test/mtcars.csv", row.names = FALSE)
+
+# Print the current working directory
+message(paste("Current Directory:", getwd()))
+writeLines(getwd(), "../output/working_directory.log")
+
+# Load custom function and generate dataset
+source("src/lib.R")
+hitchhiker_data <- make_some_data()
+
+# Save the dataset to the test directory
+hh_file <- "test/some_data_2042-07-13.csv"
+write.csv(hitchhiker_data, file = hh_file, row.names = FALSE)
+
+# Optional: convert relative configPath to an absolute path
+# params$configPath <- normalizePath(params$configPath, mustWork = TRUE)
+
+# Read config file
+data <- yaml::read_yaml(params$configPath)
+
+# Extract variables from config.yml
+input_path <- data$input_path
+k <- data$k
+s <- data$s
+boolean_value <- data$boolean_value
+
+# Read in the dataset
+df <- read.csv(input_path)
+
+# Read the file name from current.txt
+current_file_path <- "test/current.txt"
+if (file.exists(current_file_path)) {
+  current_file_name <- readLines(current_file_path, n = 1)
+  current_data_path <- file.path("test", current_file_name)
+  
+  if (file.exists(current_data_path)) {
+    current_df <- read.csv(current_data_path)
+  } else {
+    stop(paste("Error: File specified in current.txt not found:", current_data_path))
+  }
+} else {
+  stop("Error: current.txt not found in test directory.")
+}
+```
+
+# Data Processing
+
+```{r}
+# Print extracted variables
+print(paste("Input Path:", input_path))
+print(paste("Constant k:", k))
+print(paste("String s:", s))
+print(paste("Boolean Value:", boolean_value))
+```
+
+# Analysis
+
+```{r}
+# Example: Multiply mpg by k if boolean_value is TRUE
+if (boolean_value) {
+  df$mpg_scaled <- df$mpg * k
+} else {
+  df$mpg_scaled <- df$mpg
+}
+```
+
+# Results
+
+```{r}
+# Generate a box plot using plotly
+p <- ggplot(df, aes(x = factor(cyl), y = mpg, fill = factor(cyl))) +
+  geom_boxplot() +
+  labs(title = "Boxplot of MPG by Cylinder Count", x = "Cylinders", y = "MPG")
+
+ggplotly(p)
+```
+
+# Display Table from current.txt-specified file
+
+```{r}
+# Show the data frame as a table
+datatable(current_df)
+```

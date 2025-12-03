@@ -1,0 +1,4 @@
+input_path: "test/mtcars.csv"
+k: 42
+s: "Hello World"
+boolean_value: true
